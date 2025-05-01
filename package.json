@@ -20,8 +20,8 @@
     },
     {
       "name": "add-from-finder",
-      "title": "Add Directory of Current Finder Window",
-      "description": "Add the directory of the currently open finder window to zoxide.",
+      "title": "Add From Finder",
+      "description": "Add the directory of the selected folder in Finder to zoxide. If there is no selection the directory of the open finder window will be used.",
       "mode": "no-view"
     }
   ],

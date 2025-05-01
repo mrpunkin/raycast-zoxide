@@ -25,5 +25,5 @@ export const base64Encode = (path: string):string => {
   const binString = Array.from(bytes, (byte) =>
     String.fromCodePoint(byte),
   ).join("");
-  return btoa(binString);
+  return btoa(binString).replace(/=+$/, "");
 };

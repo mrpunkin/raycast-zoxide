@@ -1,5 +1,6 @@
-import { ActionPanel, Action, List, open, Icon, showToast, Toast, launchCommand, LaunchType} from "@raycast/api";
+import { ActionPanel, Action, List, open, Icon, showToast, Toast} from "@raycast/api";
 import { useCachedState } from "@raycast/utils";
+import { AddFromFinderAction } from "@components/add-from-finder-action";
 import { useZoxide } from "@hooks/use-zoxide";
 import { basename, dirname } from "path";
 
@@ -19,25 +20,24 @@ export const SearchResult = ({ searchResult }: { searchResult: SearchResult }) =
   const folder = basename(searchResult.path);
   const parent = dirname(searchResult.path) == "." ? "/" : dirname(searchResult.path);
 
-  const openResult = () => {
-    addQuery();
-    setRemovedKeys((prev) => prev.filter((key) => key !== searchResult.key));
+  const openResult = async () => {
+    await addQuery();
     open(searchResult.originalPath);
   };
 
   const removeResult = async () => {
-    const toast = await showToast({
-      style: Toast.Style.Animated,
-      title: "Removing result from zoxide..."
-    });
-    removeQuery();
+    await removeQuery();
     setRemovedKeys((prev) => prev.concat([searchResult.key]));
-    toast.style = Toast.Style.Success;
-    toast.title = "Successfully removed from zoxide";
+    showToast({
+      style: Toast.Style.Success,
+      title: "Removed from zoxide",
+      message: searchResult.path
+    });
   };
 
   return (
     <List.Item
+      id={searchResult.key}
       title={folder}
       subtitle={parent}
       icon={{ fileIcon: searchResult.originalPath || searchResult.path }}
@@ -57,12 +57,7 @@ export const SearchResult = ({ searchResult }: { searchResult: SearchResult }) =
               shortcut={{ modifiers: ["cmd"], key: "c" }}
               content={searchResult.path}
             />
-            <Action
-              title="Add Current Finder Directory"
-              icon={Icon.Folder}
-              shortcut={{ modifiers: ["ctrl"], key: "f" }}
-              onAction={() => launchCommand({name: "add-from-finder", type: LaunchType.UserInitiated})}
-            />
+            <AddFromFinderAction />
             {searchResult.score && (
               <Action
                 title="Remove Result"

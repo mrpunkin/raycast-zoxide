@@ -2,6 +2,7 @@ import { ActionPanel, Action, List, Icon } from "@raycast/api";
 import { useCachedState } from "@raycast/utils";
 import { useState, useMemo } from "react";
 import { SearchResult } from "@components/search-result";
+import { AddFromFinderAction } from "@components/add-from-finder-action";
 import { SpotlightResults } from "@components/spotlight-results";
 import { useZoxide } from "@hooks/use-zoxide";
 import { useFzf } from "@hooks/use-fzf";
@@ -11,15 +12,23 @@ export default function Command() {
   const [searchText, setSearchText] = useState("");
   const [removedKeys, setRemovedKeys] = useCachedState<string[]>("removed-keys", []);
 
-  const [isLoading, data] = useZoxide(`query -ls`, {
+  const [isLoading, data, queryZoxide] = useZoxide(`query -ls`, {
     keepPreviousData: true,
+    execute: false,
     failureToastOptions: {title: "Error querying zoxide"}
   });
+
+  // Query zoxide results once on load and reset removed keys
+  useMemo(() => {
+    setRemovedKeys([]);
+    queryZoxide();
+  }, []);
 
   const [fzfLoading, fzfResults] = useFzf(searchText, {
     input: data,
     parseOutput: parseResponse,
     keepPreviousData: true,
+    execute: !!data,
     failureToastOptions: {title: "Error querying fzf"}
   });
 
@@ -50,6 +59,7 @@ export default function Command() {
               icon={Icon.MagnifyingGlass}
               target={<SpotlightResults query={searchText} />}
             />
+            <AddFromFinderAction />
           </ActionPanel>
         }
       />
