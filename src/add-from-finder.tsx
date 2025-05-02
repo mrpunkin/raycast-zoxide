@@ -11,9 +11,9 @@ export default async function Command() {
   // Show initial toast
   const toast = await showToast({
     style: Toast.Style.Animated,
-    title: "Adding directory to zoxide..."
+    title: "Adding directory to zoxide...",
   });
-  
+
   // Wait for a bit to ensure the toast is shown
   await new Promise((resolve) => setTimeout(resolve, 250));
 
@@ -39,25 +39,25 @@ export default async function Command() {
         end if
       end tell
     `);
-    if(!finderPath || !finderPath.length) throw new Error("No open finder window");
-    finderPath = (finderPath.endsWith("/") ? finderPath.slice(0, -1) : finderPath);
-    
-    const { stdout, stderr } = await asyncExec(`zoxide add "${finderPath}"`, {
+    if (!finderPath || !finderPath.length) throw new Error("No open finder window");
+    finderPath = finderPath.endsWith("/") ? finderPath.slice(0, -1) : finderPath;
+
+    const { stderr } = await asyncExec(`zoxide add "${finderPath}"`, {
       timeout: 250,
       env: {
-        PATH: "/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin:/opt/homebrew/sbin"
-      }
+        PATH: "/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin:/opt/homebrew/sbin",
+      },
     });
-    if(stderr.length) throw new Error(stderr);
+    if (stderr.length) throw new Error(stderr);
 
     toast.style = Toast.Style.Success;
     toast.title = "Added to zoxide";
     toast.message = makeFriendly(finderPath);
-    launchCommand({name: "search-directories", type: LaunchType.UserInitiated});
-  } catch (error: any) {
+    launchCommand({ name: "search-directories", type: LaunchType.UserInitiated });
+  } catch (error) {
     toast.style = Toast.Style.Failure;
     toast.title = "Failed to add to zoxide";
-    toast.message = error?.message
+    toast.message = (error instanceof Error) ? error.message : error as string;
   }
 
   return null;

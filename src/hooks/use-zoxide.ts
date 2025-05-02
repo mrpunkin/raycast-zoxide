@@ -1,14 +1,13 @@
 import { useExec } from "@raycast/utils";
 
-export const useZoxide = (command: string, options?: {}):[boolean, string | undefined, () => void] => {
+export const useZoxide = (command: string, options?: object) => {
   options = {
     shell: true,
     timeout: 500,
     env: {
-      PATH: "/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin:/opt/homebrew/sbin"
+      PATH: "/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin:/opt/homebrew/sbin",
     },
-    ...options
+    ...options,
   };
-  const { isLoading, data, revalidate } = useExec(`zoxide ${command}`, options);
-  return [isLoading, data, revalidate];
-}
+  return useExec(`zoxide ${command}`, options);
+};

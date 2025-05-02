@@ -12,10 +12,14 @@ export default function Command() {
   const [searchText, setSearchText] = useState("");
   const [removedKeys, setRemovedKeys] = useCachedState<string[]>("removed-keys", []);
 
-  const [isLoading, data, queryZoxide] = useZoxide(`query -ls`, {
+  const {
+    isLoading,
+    data,
+    revalidate: queryZoxide,
+  } = useZoxide(`query -ls`, {
     keepPreviousData: true,
     execute: false,
-    failureToastOptions: {title: "Error querying zoxide"}
+    failureToastOptions: { title: "Error querying zoxide" },
   });
 
   // Query zoxide results once on load and reset removed keys
@@ -24,18 +28,27 @@ export default function Command() {
     queryZoxide();
   }, []);
 
-  const [fzfLoading, fzfResults] = useFzf(searchText, {
+  const { isLoading: fzfLoading, data: fzfResults } = useFzf(searchText, {
     input: data,
-    parseOutput: parseResponse,
     keepPreviousData: true,
     execute: !!data,
-    failureToastOptions: {title: "Error querying fzf"}
+    failureToastOptions: { title: "Error querying fzf" },
   });
 
-  const filteredResults = useMemo(() => {
-    return fzfResults?.filter((result) => {
-      return !removedKeys.includes(result.key);
-    });
+  const searchResults = useMemo((): SearchResult[] => {
+    if (!fzfResults || !fzfResults.length) return [];
+    return fzfResults
+      .split("\n")
+      .map((row: string): SearchResult => {
+        const [score, path] = (row.trim().match(/^\s*([\d.]+)\s+(.*)$/) || []).slice(1);
+        const originalPath = path;
+        const friendlyPath = makeFriendly(path);
+        const key = base64Encode(originalPath);
+        return { key, score, path: friendlyPath, originalPath } as SearchResult;
+      })
+      .filter((result: SearchResult) => {
+        return !removedKeys.includes(result.key);
+      });
   }, [fzfResults, removedKeys]);
 
   return (
@@ -44,9 +57,9 @@ export default function Command() {
       onSearchTextChange={setSearchText}
       searchBarPlaceholder="Search frequently used directories..."
     >
-      <List.Section title="Results" subtitle={filteredResults?.length.toString()}>
-        {filteredResults?.map((searchResult) => (
-          <SearchResult key={searchResult.key} searchResult={searchResult} />
+      <List.Section title="Results" subtitle={searchResults.length.toString()}>
+        {searchResults.map((result: SearchResult) => (
+          <SearchResult key={result.key} searchResult={result} />
         ))}
       </List.Section>
       <List.EmptyView
@@ -65,17 +78,4 @@ export default function Command() {
       />
     </List>
   );
-}
-
-const parseResponse = (args):SearchResult[] => {
-  if(args.stderr.length || args.error ) throw args.error || new Error(args.stderr);
-  if(!args.stdout.trim().length) return [];
-
-  return args.stdout.split('\n').map((row: string, idx: number) => {
-    let [score, path] = row.trim().match(/^\s*([\d\.]+)\s+(.*)$/)?.slice(1);
-    const originalPath = path;
-    const key = base64Encode(originalPath);
-    path = makeFriendly(path);
-    return {key, score, path, originalPath} as SearchResult;
-  });
 }

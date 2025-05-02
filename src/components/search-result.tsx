@@ -1,20 +1,20 @@
-import { ActionPanel, Action, List, open, Icon, showToast, Toast} from "@raycast/api";
+import { ActionPanel, Action, List, open, Icon, showToast, Toast } from "@raycast/api";
 import { useCachedState } from "@raycast/utils";
 import { AddFromFinderAction } from "@components/add-from-finder-action";
 import { useZoxide } from "@hooks/use-zoxide";
 import { basename, dirname } from "path";
 
 export const SearchResult = ({ searchResult }: { searchResult: SearchResult }) => {
-  const [removedKeys, setRemovedKeys] = useCachedState<string[]>("removed-keys", []);
+  const [, setRemovedKeys] = useCachedState<string[]>("removed-keys", []);
 
-  const [addQueryLoading, addQueryResponse, addQuery] = useZoxide(`add "${searchResult.originalPath}"`, {
+  const { revalidate: addQuery } = useZoxide(`add "${searchResult.originalPath}"`, {
     keepPreviousData: false,
-    execute: false
+    execute: false,
   });
 
-  const [removeQueryLoading, removeQueryResponse, removeQuery] = useZoxide(`remove "${searchResult.originalPath}"`, {
+  const { revalidate: removeQuery } = useZoxide(`remove "${searchResult.originalPath}"`, {
     keepPreviousData: false,
-    execute: false
+    execute: false,
   });
 
   const folder = basename(searchResult.path);
@@ -31,7 +31,7 @@ export const SearchResult = ({ searchResult }: { searchResult: SearchResult }) =
     showToast({
       style: Toast.Style.Success,
       title: "Removed from zoxide",
-      message: searchResult.path
+      message: searchResult.path,
     });
   };
 
@@ -41,14 +41,11 @@ export const SearchResult = ({ searchResult }: { searchResult: SearchResult }) =
       title={folder}
       subtitle={parent}
       icon={{ fileIcon: searchResult.originalPath || searchResult.path }}
-      accessories={[{tag: {value: searchResult.score || "0.0"}}]}
+      accessories={[{ tag: { value: searchResult.score || "0.0" } }]}
       actions={
         <ActionPanel>
           <ActionPanel.Section>
-            <Action
-              title="Open Folder"
-              onAction={openResult}
-            />
+            <Action title="Open Folder" onAction={openResult} />
           </ActionPanel.Section>
           <ActionPanel.Section>
             <Action.CopyToClipboard
@@ -72,7 +69,7 @@ export const SearchResult = ({ searchResult }: { searchResult: SearchResult }) =
       }
     />
   );
-}
+};
 
 export interface SearchResult {
   key: string;
