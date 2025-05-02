@@ -57,7 +57,7 @@ export default async function Command() {
   } catch (error) {
     toast.style = Toast.Style.Failure;
     toast.title = "Failed to add to zoxide";
-    toast.message = (error instanceof Error) ? error.message : error as string;
+    toast.message = error instanceof Error ? error.message : (error as string);
   }
 
   return null;
