@@ -14,6 +14,7 @@ Inspired by [UnlockHomes](https://github.com/UnlockHomes)' [similar zoxide exten
   - **Show in Finder:** reveal the directory in its enclosing folder
 - [Changed] The primary "Open Folder" action now reflects the app chosen in the "Open directories in" preference — e.g. "Open in Finder" (or "Open in ForkLift", etc.)
 - [Changed] When no Finder window is currently open, the "Add from Finder" command now opens a native macOS folder picker
+- [Changed] Updated dependencies to their latest compatible versions
 - [Removed] **Breaking:** "Add from Finder" no longer appears in the search result action panel — it didn't relate directly to the highlighted result, so it now lives solely as a root command
 
 ## [Fixed Memory Limit Crash] - 2026-03-24
