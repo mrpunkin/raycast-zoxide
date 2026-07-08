@@ -1,9 +1,30 @@
-import { ActionPanel, Action, List, open, Icon, showToast, Toast, getPreferenceValues } from "@raycast/api";
+import {
+  ActionPanel,
+  Action,
+  List,
+  Icon,
+  Keyboard,
+  showToast,
+  Toast,
+  getPreferenceValues,
+  closeMainWindow,
+} from "@raycast/api";
 import { useCachedState, showFailureToast } from "@raycast/utils";
 import { SearchUsingSpotlightAction } from "@components/search-using-spotlight-action";
 import { useZoxide } from "@hooks/use-zoxide";
 import { basename, dirname } from "path";
 import { base64ShellSanitize } from "@utils/misc";
+import { execFile } from "child_process";
+import { promisify } from "util";
+
+const execFileAsync = promisify(execFile);
+
+// Open a folder in an app via the `open` CLI — Raycast's open() drops the folder
+// target on recent versions (Finder lands on a default location); a real CLI arg navigates.
+const openInApp = (path: string, bundleId: string | undefined) => {
+  if (!bundleId) throw new Error("The selected application has no bundle identifier");
+  return execFileAsync("/usr/bin/open", ["-b", bundleId, path]);
+};
 
 export const SearchResult = ({
   searchResult,
@@ -46,13 +67,13 @@ export const SearchResult = ({
   const showTerminal = terminal.bundleId !== openIn.bundleId;
   const showEditor = editor.bundleId !== openIn.bundleId && editor.bundleId !== terminal.bundleId;
 
-  // Opening a result counts as a visit, so boost its score in zoxide first.
-  // Pass a bundle id, not an app name — `open(path, "Finder")` by name lands on AirDrop.
+  // Bump the score first (while mounted), then open. closeMainWindow() is explicit
+  // here — a native Action.Open would dismiss Raycast for us; our onAction won't.
   const openIn_ = async (bundleId: string | undefined, failureTitle: string) => {
     try {
       await addQuery();
-      if (bundleId) await open(searchResult.originalPath, bundleId);
-      else await open(searchResult.originalPath);
+      await openInApp(searchResult.originalPath, bundleId);
+      await closeMainWindow();
     } catch (error) {
       showFailureToast(error, { title: failureTitle });
     }
@@ -116,7 +137,7 @@ export const SearchResult = ({
               />
             )}
             <Action.ShowInFinder path={searchResult.originalPath} shortcut={{ modifiers: ["cmd"], key: "f" }} />
-            <Action.OpenWith path={searchResult.originalPath} shortcut={{ modifiers: ["cmd"], key: "o" }} />
+            <Action.OpenWith path={searchResult.originalPath} shortcut={Keyboard.Shortcut.Common.Open} />
             <SearchUsingSpotlightAction searchText={searchText || ""} />
           </ActionPanel.Section>
           <ActionPanel.Section>
