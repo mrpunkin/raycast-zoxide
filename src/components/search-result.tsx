@@ -1,19 +1,8 @@
-import {
-  ActionPanel,
-  Action,
-  List,
-  Icon,
-  Keyboard,
-  showToast,
-  Toast,
-  getPreferenceValues,
-} from "@raycast/api";
+import { ActionPanel, Action, List, Icon, Keyboard, showToast, Toast, getPreferenceValues } from "@raycast/api";
 import { useCachedState, showFailureToast } from "@raycast/utils";
 import { SearchUsingSpotlightAction } from "@components/search-using-spotlight-action";
-import { useZoxide } from "@hooks/use-zoxide";
 import { basename, dirname } from "path";
-import { base64ShellSanitize } from "@utils/misc";
-import { addToZoxide } from "@utils/zoxide";
+import { addToZoxide, removeFromZoxide } from "@utils/zoxide";
 
 export const SearchResult = ({
   searchResult,
@@ -31,11 +20,6 @@ export const SearchResult = ({
   const openIn = prefs["open-in"]!;
   const terminal = prefs["open-in-terminal"]!;
   const editor = prefs["open-in-editor"]!;
-
-  const { revalidate: removeQuery } = useZoxide(`remove "${base64ShellSanitize(searchResult.originalPath)}"`, {
-    keepPreviousData: false,
-    execute: false,
-  });
 
   const folder = basename(searchResult.path);
   const parent = dirname(searchResult.path) === "." ? "/" : dirname(searchResult.path);
@@ -76,7 +60,7 @@ export const SearchResult = ({
 
   const removeResult = async () => {
     try {
-      await removeQuery();
+      await removeFromZoxide(searchResult.originalPath);
       setRemovedKeys((prev) => prev.concat([searchResult.key]));
       showToast({
         style: Toast.Style.Success,
