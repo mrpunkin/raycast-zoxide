@@ -2,7 +2,7 @@
 
 ## [Boost on Every Open] - {PR_MERGE_DATE}
 
-- [Changed] "Open With" now boosts the directory's score in zoxide, like the other open actions
+- [Changed] "Open With" now boosts the directory's score in zoxide, like the other open actions (score boosts on open require Raycast 2.11 or later)
 - [Changed] Opening a directory now uses Raycast's native open actions
 - [Changed] Folder names and search text containing quotes or other special characters are now passed to zoxide and fzf directly instead of through a shell
 - [Changed] Updated to Raycast API 2.11 and refreshed dependencies to their latest compatible versions
