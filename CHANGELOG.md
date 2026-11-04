@@ -1,8 +1,11 @@
 # Raycast Zoxide Changelog
 
-## [Update Dependencies] - {PR_MERGE_DATE}
+## [Boost on Every Open] - {PR_MERGE_DATE}
 
-- [Changed] Updated to Raycast API 2.9 and refreshed dependencies to their latest compatible versions
+- [Changed] "Open With" now boosts the directory's score in zoxide, like the other open actions
+- [Changed] Opening a directory now uses Raycast's native open actions
+- [Changed] Folder names and search text containing quotes or other special characters are now passed to zoxide and fzf directly instead of through a shell
+- [Changed] Updated to Raycast API 2.11 and refreshed dependencies to their latest compatible versions
 
 ## [Fix Opening Directories] - 2026-07-08
 
